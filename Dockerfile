@@ -28,10 +28,10 @@ WORKDIR /home/agent
 COPY --chown=agent:agent pyproject.toml uv.lock README.md ./
 COPY --chown=agent:agent src src
 
-# Install dependencies
+# Install dependencies (sync will update lock if needed)
 RUN \
     --mount=type=cache,target=/home/agent/.cache/uv,uid=1000 \
-    uv sync --locked
+    uv sync
 
 # Copy scenario files
 COPY --chown=agent:agent scenarios scenarios

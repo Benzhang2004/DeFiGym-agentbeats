@@ -1,10 +1,36 @@
 [project]
-name = "agent-template"
+name = "defigym-agent"
 version = "0.1.0"
-description = "A template for A2A agents"
+description = "DeFiGym Green Agent for Agentbeats - Benchmarking AI agents on DeFi vulnerability discovery"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.12"
 dependencies = [
+    # A2A Protocol
     "a2a-sdk[http-server]>=0.3.20",
     "uvicorn>=0.38.0",
+
+    # Core
+    "pydantic>=2.0",
+    "pyyaml>=6.0",
+
+    # Database
+    "sqlalchemy>=2.0",
+
+    # Git operations
+    "gitpython>=3.1",
+
+    # Logging
+    "loguru>=0.7.0",
+
+    # Environment
+    "python-dotenv>=1.1.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.21",
+    "black>=23.0",
+    "ruff>=0.1",
+    "mypy>=1.7",
 ]

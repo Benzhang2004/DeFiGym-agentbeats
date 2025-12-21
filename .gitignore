@@ -12,3 +12,16 @@ wheels/
 
 # Virtual environments
 .venv
+
+# DeFiGym data directories
+data/
+workspaces/
+
+# Foundry artifacts
+out/
+cache/
+broadcast/
+
+# Logs
+*.log
+logs/

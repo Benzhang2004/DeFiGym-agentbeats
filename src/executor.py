@@ -1,62 +1,105 @@
+"""
+GreenExecutor for DeFiGym Agent.
+
+Handles A2A protocol requests and delegates to the DeFiGymAgent.
+"""
+
+from pydantic import ValidationError
+
 from a2a.server.agent_execution import AgentExecutor, RequestContext
 from a2a.server.events import EventQueue
 from a2a.server.tasks import TaskUpdater
 from a2a.types import (
+    InvalidParamsError,
     Task,
     TaskState,
     UnsupportedOperationError,
-    InvalidRequestError,
+    InternalError,
 )
-from a2a.utils.errors import ServerError
 from a2a.utils import (
     new_agent_text_message,
     new_task,
 )
+from a2a.utils.errors import ServerError
 
-from agent import Agent
-
-
-TERMINAL_STATES = {
-    TaskState.completed,
-    TaskState.canceled,
-    TaskState.failed,
-    TaskState.rejected
-}
+from agent import GreenAgent
+from defigym.models import EvalRequest
 
 
-class Executor(AgentExecutor):
-    def __init__(self):
-        self.agents: dict[str, Agent] = {} # context_id to agent instance
+class GreenExecutor(AgentExecutor):
+    """
+    Executor for Green Agents following the Agentbeats pattern.
 
-    async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
+    Parses incoming EvalRequest, validates it, and delegates to the Green Agent.
+    """
+
+    def __init__(self, green_agent: GreenAgent):
+        """
+        Initialize executor with a Green Agent.
+
+        Args:
+            green_agent: The Green Agent instance to execute evaluations
+        """
+        self.agent = green_agent
+
+    async def execute(
+        self,
+        context: RequestContext,
+        event_queue: EventQueue,
+    ) -> None:
+        """
+        Execute the evaluation request.
+
+        Args:
+            context: Request context containing the message
+            event_queue: Queue for emitting events
+        """
+        # Parse the request
+        request_text = context.get_user_input()
+        try:
+            req: EvalRequest = EvalRequest.model_validate_json(request_text)
+            ok, msg = self.agent.validate_request(req)
+            if not ok:
+                raise ServerError(error=InvalidParamsError(message=msg))
+        except ValidationError as e:
+            raise ServerError(error=InvalidParamsError(message=e.json()))
+
+        # Create task
         msg = context.message
-        if not msg:
-            raise ServerError(error=InvalidRequestError(message="Missing message in request"))
-
-        task = context.current_task
-        if task and task.status.state in TERMINAL_STATES:
-            raise ServerError(error=InvalidRequestError(message=f"Task {task.id} already processed (state: {task.status.state})"))
-
-        if not task:
+        if msg:
             task = new_task(msg)
             await event_queue.enqueue_event(task)
+        else:
+            raise ServerError(error=InvalidParamsError(message="Missing message."))
 
-        context_id = task.context_id
-        agent = self.agents.get(context_id)
-        if not agent:
-            agent = Agent()
-            self.agents[context_id] = agent
+        # Create updater and start work
+        updater = TaskUpdater(event_queue, task.id, task.context_id)
+        await updater.update_status(
+            TaskState.working,
+            new_agent_text_message(
+                f"Starting DeFiGym assessment.\n{req.model_dump_json()}",
+                context_id=context.context_id
+            )
+        )
 
-        updater = TaskUpdater(event_queue, task.id, context_id)
-
-        await updater.start_work()
+        # Run the evaluation
         try:
-            await agent.run(msg, updater)
-            if not updater._terminal_state_reached:
-                await updater.complete()
+            await self.agent.run_eval(req, updater)
+            await updater.complete()
         except Exception as e:
-            print(f"Task failed with agent error: {e}")
-            await updater.failed(new_agent_text_message(f"Agent error: {e}", context_id=context_id, task_id=task.id))
+            print(f"Agent error: {e}")
+            await updater.failed(
+                new_agent_text_message(
+                    f"Agent error: {e}",
+                    context_id=context.context_id
+                )
+            )
+            raise ServerError(error=InternalError(message=str(e)))
 
-    async def cancel(self, context: RequestContext, event_queue: EventQueue) -> None:
+    async def cancel(
+        self,
+        request: RequestContext,
+        event_queue: EventQueue,
+    ) -> Task | None:
+        """Cancel operation is not supported."""
         raise ServerError(error=UnsupportedOperationError())

@@ -234,7 +234,8 @@ class ExploitValidator:
 
             output = result.stdout + "\n" + result.stderr
             logger.info(f"Forge exit code: {result.returncode}")
-            logger.debug(f"Forge output:\n{output[:2000]}")  # Log first 2000 chars
+            # Log last part of output which contains test results
+            logger.info(f"Forge output (last 3000 chars):\n{output[-3000:]}")
             return self.parser.parse(output)
 
         except subprocess.TimeoutExpired:

@@ -39,6 +39,16 @@ COPY --chown=agent:agent scenarios scenarios
 # Clone DeFiHackLabs repository with submodules
 RUN git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/SunWeb3Sec/DeFiHackLabs.git data/defihacklabs
 
+# Update foundry.toml with Ankr archive RPC endpoints
+RUN sed -i 's|mainnet = "https://eth.llamarpc.com"|mainnet = "https://rpc.ankr.com/eth/9aa76d7de0306e4a92cf64b9fdd5f6f6b4aa8b18468610370796ba5d08a02bf7"|g' data/defihacklabs/foundry.toml && \
+    sed -i 's|arbitrum = .*|arbitrum = "https://rpc.ankr.com/arbitrum/9aa76d7de0306e4a92cf64b9fdd5f6f6b4aa8b18468610370796ba5d08a02bf7"|g' data/defihacklabs/foundry.toml && \
+    sed -i 's|optimism = .*|optimism = "https://rpc.ankr.com/optimism/9aa76d7de0306e4a92cf64b9fdd5f6f6b4aa8b18468610370796ba5d08a02bf7"|g' data/defihacklabs/foundry.toml && \
+    sed -i 's|polygon = .*|polygon = "https://rpc.ankr.com/polygon/9aa76d7de0306e4a92cf64b9fdd5f6f6b4aa8b18468610370796ba5d08a02bf7"|g' data/defihacklabs/foundry.toml && \
+    sed -i 's|bsc = .*|bsc = "https://rpc.ankr.com/bsc/9aa76d7de0306e4a92cf64b9fdd5f6f6b4aa8b18468610370796ba5d08a02bf7"|g' data/defihacklabs/foundry.toml && \
+    sed -i 's|base = .*|base = "https://rpc.ankr.com/base/9aa76d7de0306e4a92cf64b9fdd5f6f6b4aa8b18468610370796ba5d08a02bf7"|g' data/defihacklabs/foundry.toml && \
+    sed -i 's|avalanche = .*|avalanche = "https://rpc.ankr.com/avalanche/9aa76d7de0306e4a92cf64b9fdd5f6f6b4aa8b18468610370796ba5d08a02bf7"|g' data/defihacklabs/foundry.toml && \
+    sed -i 's|fantom = .*|fantom = "https://rpc.ankr.com/fantom/9aa76d7de0306e4a92cf64b9fdd5f6f6b4aa8b18468610370796ba5d08a02bf7"|g' data/defihacklabs/foundry.toml
+
 # Environment variables
 ENV DEFIHACKLABS_REPO="/home/agent/data/defihacklabs"
 

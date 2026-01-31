@@ -39,23 +39,15 @@ COPY --chown=agent:agent scenarios scenarios
 # Clone DeFiHackLabs repository with submodules
 RUN git clone --depth 1 --recurse-submodules --shallow-submodules https://github.com/SunWeb3Sec/DeFiHackLabs.git data/defihacklabs
 
-# Update foundry.toml to use environment variables for RPC endpoints
-# These will be populated at runtime from GitHub secrets
-# Note: Using flexible patterns to handle variable whitespace in the original file
-RUN sed -i -E 's|^mainnet[[:space:]]*=.*|mainnet = "${ETH_RPC_URL}"|' data/defihacklabs/foundry.toml && \
-    sed -i -E 's|^arbitrum[[:space:]]*=.*|arbitrum = "${ARBITRUM_RPC_URL}"|' data/defihacklabs/foundry.toml && \
-    sed -i -E 's|^optimism[[:space:]]*=.*|optimism = "${OPTIMISM_RPC_URL}"|' data/defihacklabs/foundry.toml && \
-    sed -i -E 's|^polygon[[:space:]]*=.*|polygon = "${POLYGON_RPC_URL}"|' data/defihacklabs/foundry.toml && \
-    sed -i -E 's|^bsc[[:space:]]*=.*|bsc = "${BSC_RPC_URL}"|' data/defihacklabs/foundry.toml && \
-    sed -i -E 's|^base[[:space:]]*=.*|base = "${BASE_RPC_URL}"|' data/defihacklabs/foundry.toml && \
-    sed -i -E 's|^avalanche[[:space:]]*=.*|avalanche = "${AVALANCHE_RPC_URL}"|' data/defihacklabs/foundry.toml && \
-    sed -i -E 's|^fantom[[:space:]]*=.*|fantom = "${FANTOM_RPC_URL}"|' data/defihacklabs/foundry.toml
+# Copy entrypoint script (substitutes RPC env vars at runtime)
+COPY --chown=agent:agent entrypoint.sh ./
+RUN chmod +x entrypoint.sh
 
 # Environment variables
 ENV DEFIHACKLABS_REPO="/home/agent/data/defihacklabs"
 
-# Entrypoint
-ENTRYPOINT ["uv", "run", "src/server.py"]
+# Entrypoint - uses script to setup RPC endpoints at runtime
+ENTRYPOINT ["./entrypoint.sh"]
 CMD ["--host", "0.0.0.0"]
 
 # Expose default port

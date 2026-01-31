@@ -1,0 +1,41 @@
+# Groundtruth Purple Agent Dockerfile
+#
+# This image includes:
+# - Python 3.12 with uv package manager
+# - Groundtruth Purple Agent that returns actual exploits from DeFiHackLabs
+
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
+
+# Install system dependencies
+USER root
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create agent user and setup
+RUN adduser --disabled-password --gecos "" agent
+USER agent
+WORKDIR /home/agent
+
+# Copy project files
+COPY --chown=agent:agent pyproject.toml uv.lock* README.md ./
+COPY --chown=agent:agent src src
+
+# Install dependencies
+RUN \
+    --mount=type=cache,target=/home/agent/.cache/uv,uid=1000 \
+    uv sync
+
+# Create data directory for DeFiHackLabs repo (mounted at runtime)
+RUN mkdir -p data
+
+# Environment variables
+ENV DEFIHACKLABS_REPO="/home/agent/data/defihacklabs"
+
+# Entrypoint - run groundtruth purple agent server
+ENTRYPOINT ["uv", "run", "python", "src/purple/server.py"]
+CMD ["--host", "0.0.0.0", "--port", "9010"]
+
+# Expose default port
+EXPOSE 9010

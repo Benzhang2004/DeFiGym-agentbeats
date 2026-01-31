@@ -1,0 +1,3 @@
+[submodule "agentbeat-leaderboard"]
+	path = agentbeat-leaderboard
+	url = git@github.com:Benzhang2004/agentbeat-leaderboard.git

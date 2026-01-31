@@ -14,8 +14,8 @@ cmd = "uv run src/server.py --host 127.0.0.1 --port 9009"
 [[participants]]
 role = "exploit_agent"
 endpoint = "http://127.0.0.1:9010"
-# Replace with your purple agent command
-cmd = "echo 'Replace with your exploit agent command'"
+# Run the baseline purple agent
+cmd = "uv run python src/purple/server.py --host 127.0.0.1 --port 9010"
 
 # Example vulnerability configuration
 # This demonstrates a reentrancy vulnerability assessment

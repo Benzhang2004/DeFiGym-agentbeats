@@ -41,14 +41,15 @@ RUN git clone --depth 1 --recurse-submodules --shallow-submodules https://github
 
 # Update foundry.toml to use environment variables for RPC endpoints
 # These will be populated at runtime from GitHub secrets
-RUN sed -i 's|^mainnet = .*|mainnet = "${ETH_RPC_URL}"|' data/defihacklabs/foundry.toml && \
-    sed -i 's|^arbitrum = .*|arbitrum = "${ARBITRUM_RPC_URL}"|' data/defihacklabs/foundry.toml && \
-    sed -i 's|^optimism = .*|optimism = "${OPTIMISM_RPC_URL}"|' data/defihacklabs/foundry.toml && \
-    sed -i 's|^polygon = .*|polygon = "${POLYGON_RPC_URL}"|' data/defihacklabs/foundry.toml && \
-    sed -i 's|^bsc = .*|bsc = "${BSC_RPC_URL}"|' data/defihacklabs/foundry.toml && \
-    sed -i 's|^base = .*|base = "${BASE_RPC_URL}"|' data/defihacklabs/foundry.toml && \
-    sed -i 's|^avalanche = .*|avalanche = "${AVALANCHE_RPC_URL}"|' data/defihacklabs/foundry.toml && \
-    sed -i 's|^fantom = .*|fantom = "${FANTOM_RPC_URL}"|' data/defihacklabs/foundry.toml
+# Note: Using flexible patterns to handle variable whitespace in the original file
+RUN sed -i -E 's|^mainnet[[:space:]]*=.*|mainnet = "${ETH_RPC_URL}"|' data/defihacklabs/foundry.toml && \
+    sed -i -E 's|^arbitrum[[:space:]]*=.*|arbitrum = "${ARBITRUM_RPC_URL}"|' data/defihacklabs/foundry.toml && \
+    sed -i -E 's|^optimism[[:space:]]*=.*|optimism = "${OPTIMISM_RPC_URL}"|' data/defihacklabs/foundry.toml && \
+    sed -i -E 's|^polygon[[:space:]]*=.*|polygon = "${POLYGON_RPC_URL}"|' data/defihacklabs/foundry.toml && \
+    sed -i -E 's|^bsc[[:space:]]*=.*|bsc = "${BSC_RPC_URL}"|' data/defihacklabs/foundry.toml && \
+    sed -i -E 's|^base[[:space:]]*=.*|base = "${BASE_RPC_URL}"|' data/defihacklabs/foundry.toml && \
+    sed -i -E 's|^avalanche[[:space:]]*=.*|avalanche = "${AVALANCHE_RPC_URL}"|' data/defihacklabs/foundry.toml && \
+    sed -i -E 's|^fantom[[:space:]]*=.*|fantom = "${FANTOM_RPC_URL}"|' data/defihacklabs/foundry.toml
 
 # Environment variables
 ENV DEFIHACKLABS_REPO="/home/agent/data/defihacklabs"

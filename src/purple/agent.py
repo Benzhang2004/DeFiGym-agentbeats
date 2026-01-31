@@ -99,6 +99,7 @@ class GroundtruthAgent:
         """
         # Extract contract path from task
         contract_path = self._extract_contract_path(task_description)
+        print(f"[Groundtruth] Extracted contract path: {contract_path}")
 
         if not contract_path:
             return self._error_response(
@@ -107,6 +108,7 @@ class GroundtruthAgent:
 
         # Read the actual exploit
         exploit_code = self._read_exploit_file(contract_path)
+        print(f"[Groundtruth] Exploit code length: {len(exploit_code) if exploit_code else 0}")
 
         if not exploit_code:
             return self._error_response(

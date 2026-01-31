@@ -14,15 +14,15 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Foundry
-RUN curl -L https://foundry.paradigm.xyz | bash
-ENV PATH="/root/.foundry/bin:${PATH}"
-RUN foundryup
-
 # Create agent user and setup
 RUN adduser --disabled-password --gecos "" agent
+
+# Install Foundry as agent user
 USER agent
 WORKDIR /home/agent
+RUN curl -L https://foundry.paradigm.xyz | bash
+ENV PATH="/home/agent/.foundry/bin:${PATH}"
+RUN /home/agent/.foundry/bin/foundryup
 
 # Copy project files
 COPY --chown=agent:agent pyproject.toml uv.lock README.md ./

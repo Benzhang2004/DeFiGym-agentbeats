@@ -36,8 +36,8 @@ RUN \
 # Copy scenario files
 COPY --chown=agent:agent scenarios scenarios
 
-# Create data directory for DeFiHackLabs repo
-RUN mkdir -p data
+# Clone DeFiHackLabs repository
+RUN git clone --depth 1 https://github.com/SunWeb3Sec/DeFiHackLabs.git data/defihacklabs
 
 # Environment variables
 ENV DEFIHACKLABS_REPO="/home/agent/data/defihacklabs"
